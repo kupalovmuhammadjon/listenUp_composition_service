@@ -6,7 +6,7 @@ service EpisodesService {
     rpc CreatePodcastEpisode(EpisodeCreate) returns (ID) {}
     rpc GetEpisodesByPodcastId(ID) returns (Episodes) {}
     rpc UpdateEpisode(IDs) returns (Void) {}
-    rpc DeleteEpisode(IDs) returns (Void) {}
+    rpc DeleteEpisode(IDsForDelete) returns (Void) {}
     rpc PublishPodcast(ID) returns (Success) {}
 }
 
@@ -46,6 +46,11 @@ message IDs {
     string podcast_id = 1;
     string episode_id = 2;
     EpisodeCreate episode = 3;
+}
+
+message IDsForDelete {
+    string podcast_id = 1;
+    string episode_id = 2;
 }
 
 message Success {

@@ -17,7 +17,7 @@ CREATE TABLE episodes (
       title VARCHAR(100) NOT NULL,
       file_audio bytea NOT NULL,
       description TEXT,
-      duration INTERVAL,
+      duration float,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
       updated_at TIMESTAMP,
       deleted_at TIMESTAMP

@@ -25,7 +25,7 @@ type EpisodesServiceClient interface {
 	CreatePodcastEpisode(ctx context.Context, in *EpisodeCreate, opts ...grpc.CallOption) (*ID, error)
 	GetEpisodesByPodcastId(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Episodes, error)
 	UpdateEpisode(ctx context.Context, in *IDs, opts ...grpc.CallOption) (*Void, error)
-	DeleteEpisode(ctx context.Context, in *IDs, opts ...grpc.CallOption) (*Void, error)
+	DeleteEpisode(ctx context.Context, in *IDsForDelete, opts ...grpc.CallOption) (*Void, error)
 	PublishPodcast(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Success, error)
 }
 
@@ -64,7 +64,7 @@ func (c *episodesServiceClient) UpdateEpisode(ctx context.Context, in *IDs, opts
 	return out, nil
 }
 
-func (c *episodesServiceClient) DeleteEpisode(ctx context.Context, in *IDs, opts ...grpc.CallOption) (*Void, error) {
+func (c *episodesServiceClient) DeleteEpisode(ctx context.Context, in *IDsForDelete, opts ...grpc.CallOption) (*Void, error) {
 	out := new(Void)
 	err := c.cc.Invoke(ctx, "/EpisodesService/DeleteEpisode", in, out, opts...)
 	if err != nil {
@@ -89,7 +89,7 @@ type EpisodesServiceServer interface {
 	CreatePodcastEpisode(context.Context, *EpisodeCreate) (*ID, error)
 	GetEpisodesByPodcastId(context.Context, *ID) (*Episodes, error)
 	UpdateEpisode(context.Context, *IDs) (*Void, error)
-	DeleteEpisode(context.Context, *IDs) (*Void, error)
+	DeleteEpisode(context.Context, *IDsForDelete) (*Void, error)
 	PublishPodcast(context.Context, *ID) (*Success, error)
 	mustEmbedUnimplementedEpisodesServiceServer()
 }
@@ -107,7 +107,7 @@ func (UnimplementedEpisodesServiceServer) GetEpisodesByPodcastId(context.Context
 func (UnimplementedEpisodesServiceServer) UpdateEpisode(context.Context, *IDs) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateEpisode not implemented")
 }
-func (UnimplementedEpisodesServiceServer) DeleteEpisode(context.Context, *IDs) (*Void, error) {
+func (UnimplementedEpisodesServiceServer) DeleteEpisode(context.Context, *IDsForDelete) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteEpisode not implemented")
 }
 func (UnimplementedEpisodesServiceServer) PublishPodcast(context.Context, *ID) (*Success, error) {
@@ -181,7 +181,7 @@ func _EpisodesService_UpdateEpisode_Handler(srv interface{}, ctx context.Context
 }
 
 func _EpisodesService_DeleteEpisode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IDs)
+	in := new(IDsForDelete)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func _EpisodesService_DeleteEpisode_Handler(srv interface{}, ctx context.Context
 		FullMethod: "/EpisodesService/DeleteEpisode",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EpisodesServiceServer).DeleteEpisode(ctx, req.(*IDs))
+		return srv.(EpisodesServiceServer).DeleteEpisode(ctx, req.(*IDsForDelete))
 	}
 	return interceptor(ctx, in, info, handler)
 }
