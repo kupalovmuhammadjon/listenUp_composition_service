@@ -7,7 +7,7 @@ CREATE TABLE podcasts (
     status episode_status DEFAULT 'draft',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
     updated_at TIMESTAMP,
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMP    
 );
 
 CREATE TABLE episodes (
@@ -18,7 +18,6 @@ CREATE TABLE episodes (
       file_audio bytea NOT NULL,
       description TEXT,
       duration INTERVAL,
-      published_at TIMESTAMP WITH TIME ZONE,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
       updated_at TIMESTAMP,
       deleted_at TIMESTAMP

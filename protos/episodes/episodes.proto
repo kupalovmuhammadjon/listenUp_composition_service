@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "genproto/episodes";
 
-service Podcasts {
+service EpisodesService {
     rpc CreatePodcastEpisode(EpisodeCreate) returns (ID) {}
     rpc GetEpisodesByPodcastId(ID) returns (Episodes) {}
     rpc UpdateEpisode(IDs) returns (Void) {}
@@ -11,10 +11,12 @@ service Podcasts {
 }
 
 message EpisodeCreate {
-    string composition_id = 1;
+    string podcast_id = 1;
     string user_id = 2;
     string title = 3;
-    bytes file_url = 4;
+    bytes file_audio = 4;
+    string description = 5;
+    float duration = 6;
 }
 
 message ID {
@@ -23,12 +25,14 @@ message ID {
 
 message Episode {
     string id = 1;
-    string composition_id = 2;
+    string podcast_id = 2;
     string user_id = 3;
     string title = 4;
-    bytes file_url = 5;
-    string created_at = 6;
-    string updated_at = 7;
+    bytes file_audio = 5;
+    string description = 6;
+    float duration = 7;
+    string created_at = 8;
+    string updated_at = 9;
 }
 
 message Episodes {
@@ -39,8 +43,9 @@ message Void {
 }
 
 message IDs {
-    string composition_id = 1;
-    string track_id = 2;
+    string podcast_id = 1;
+    string episode_id = 2;
+    EpisodeCreate episode = 3;
 }
 
 message Success {
