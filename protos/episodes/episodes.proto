@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "genproto/episodes";
+
+service Podcasts {
+    rpc CreatePodcastEpisode(EpisodeCreate) returns (ID) {}
+    rpc GetEpisodesByPodcastId(ID) returns (Episodes) {}
+    rpc UpdateEpisode(IDs) returns (Void) {}
+    rpc DeleteEpisode(IDs) returns (Void) {}
+    rpc PublishPodcast(ID) returns (Success) {}
+}
+
+message EpisodeCreate {
+    string composition_id = 1;
+    string user_id = 2;
+    string title = 3;
+    bytes file_url = 4;
+}
+
+message ID {
+    string id = 1;
+}
+
+message Episode {
+    string id = 1;
+    string composition_id = 2;
+    string user_id = 3;
+    string title = 4;
+    bytes file_url = 5;
+    string created_at = 6;
+    string updated_at = 7;
+}
+
+message Episodes {
+    repeated Episode episodes = 1;
+}
+
+message Void {
+}
+
+message IDs {
+    string composition_id = 1;
+    string track_id = 2;
+}
+
+message Success {
+    bool success = 1;
+}
