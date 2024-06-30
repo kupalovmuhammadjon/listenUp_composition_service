@@ -7,11 +7,16 @@ import (
 )
 
 type EpisodeService struct {
-	Repo *postgres.EpisodeRepo
+	pb.UnimplementedEpisodesServiceServer
+	Episode *postgres.EpisodeRepo
+}
+
+func NewEpisodeService(Episode *postgres.EpisodeRepo) *EpisodeService {
+	return &EpisodeService{Episode: Episode}
 }
 
 func (e *EpisodeService) GetEpisodesByPodcastId(ctx context.Context, req *pb.ID) (*pb.Episodes, error) {
-	resp, err := e.Repo.GetEpisodesByPodcastId(req)
+	resp, err := e.Episode.GetEpisodesByPodcastId(req)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +25,7 @@ func (e *EpisodeService) GetEpisodesByPodcastId(ctx context.Context, req *pb.ID)
 }
 
 func (e *EpisodeService) UpdateEpisode(ctx context.Context, req *pb.IDs) (*pb.Void, error) {
-	resp, err := e.Repo.UpdateEpisode(req)
+	resp, err := e.Episode.UpdateEpisode(req)
 	if err != nil {
 		return nil, err
 	}

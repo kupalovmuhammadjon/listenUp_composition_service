@@ -7,11 +7,16 @@ import (
 )
 
 type PodcastService struct {
-	Repo *postgres.PodcastRepo
+	pb.UnimplementedPodcastsServer
+	Podcast *postgres.PodcastRepo
+}
+
+func NewPodcastService(Podcast *postgres.PodcastRepo) *PodcastService {
+	return &PodcastService{Podcast: Podcast}
 }
 
 func (p *PodcastService) CreatePodcast(req *pb.PodcastCreate) (*string, error) {
-	resp, err := p.Repo.CreatePodcast(req)
+	resp, err := p.Podcast.CreatePodcast(req)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +25,7 @@ func (p *PodcastService) CreatePodcast(req *pb.PodcastCreate) (*string, error) {
 }
 
 func (p *PodcastService) DeletePodcast(req *pb.ID) (*pb.Void, error) {
-	resp, err := p.Repo.DeletePodcast(req)
+	resp, err := p.Podcast.DeletePodcast(req)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +34,7 @@ func (p *PodcastService) DeletePodcast(req *pb.ID) (*pb.Void, error) {
 }
 
 func (p *PodcastService) GetPodcastById(ctx context.Context, req *pb.ID) (*pb.Podcast, error) {
-	resp, err := p.Repo.GetPodcastById(req)
+	resp, err := p.Podcast.GetPodcastById(req)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +43,7 @@ func (p *PodcastService) GetPodcastById(ctx context.Context, req *pb.ID) (*pb.Po
 }
 
 func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.UserPodcasts, error) {
-	resp, err := p.Repo.GetUserPodcasts(req)
+	resp, err := p.Podcast.GetUserPodcasts(req)
 	if err != nil {
 		return nil, err
 	}

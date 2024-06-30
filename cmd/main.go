@@ -7,6 +7,7 @@ import (
 	"podcast_service/config"
 	pbE "podcast_service/genproto/episodes"
 	pbP "podcast_service/genproto/podcasts"
+	"podcast_service/service"
 	"podcast_service/storage/postgres"
 
 	"google.golang.org/grpc"
@@ -23,8 +24,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	p := service.NewPodcast(postgres.NewPodcastRepo(db))
-	e := service.NewEpicode(postgres.NewEpisodeRepo(db))
+	p := service.NewPodcastService(postgres.NewPodcastRepo(db))
+	e := service.NewEpisodeService(postgres.NewEpisodeRepo(db))
 
 	grpcServer := grpc.NewServer()
 	pbP.RegisterPodcastsServer(grpcServer, p)
