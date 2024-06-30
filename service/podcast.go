@@ -15,13 +15,13 @@ func NewPodcastService(Podcast *postgres.PodcastRepo) *PodcastService {
 	return &PodcastService{Podcast: Podcast}
 }
 
-func (p *PodcastService) CreatePodcast(req *pb.PodcastCreate) (*string, error) {
+func (p *PodcastService) CreatePodcast(ctx context.Context, req *pb.PodcastCreate) (*pb.ID, error) {
 	resp, err := p.Podcast.CreatePodcast(req)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return &pb.ID{Id: *resp}, nil
 }
 
 func (p *PodcastService) GetPodcastById(ctx context.Context, req *pb.ID) (*pb.Podcast, error) {
@@ -42,7 +42,7 @@ func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.U
 	return resp, nil
 }
 
-func (p *PodcastService) DeletePodcast(req *pb.ID) (*pb.Void, error) {
+func (p *PodcastService) DeletePodcast(ctx context.Context, req *pb.ID) (*pb.Void, error) {
 	resp, err := p.Podcast.DeletePodcast(req)
 	if err != nil {
 		return nil, err
