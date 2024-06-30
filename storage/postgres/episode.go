@@ -128,7 +128,7 @@ func (e *EpisodeRepo) UpdateEpisode(ctx context.Context, in *pb.IDs) (*pb.Void, 
 	return &pb.Void{}, nil
 }
 
-func (e *EpisodeRepo) DeletePodcastEpisode(ids pb.IDsForDelete) error {
+func (e *EpisodeRepo) DeletePodcastEpisode(ids *pb.IDsForDelete) error {
 	query := `
 	update 
 	    episodes 
