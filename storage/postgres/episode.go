@@ -50,7 +50,7 @@ func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, e
 	return id, nil
 }
 
-func (p *PodcastRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, error) {
+func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, error) {
 	query := `select id, podcast_id, user_id, title, file_audio,
 	description, duration, created_at, updated_at from episodes 
 	where podcast_id = $1`
