@@ -5,9 +5,7 @@ import (
 	pb "podcast_service/genproto/podcasts"
 	"time"
 
-	"context"
 	"database/sql"
-
 	"github.com/google/uuid"
 )
 
@@ -99,7 +97,7 @@ func (p *PodcastRepo) DeletePodcast(podcastId *pb.ID) (*pb.Void, error) {
 	}
 	return &pb.Void{}, nil
 }
-func (p *PodcastRepo) GetPodcastById(ctx context.Context, in *pb.ID) (*pb.Podcast, error) {
+func (p *PodcastRepo) GetPodcastById(in *pb.ID) (*pb.Podcast, error) {
 	podcast := &pb.Podcast{Id: in.Id}
 
 	query := `select user_id, title, description, created_at, updated_at
@@ -113,7 +111,7 @@ func (p *PodcastRepo) GetPodcastById(ctx context.Context, in *pb.ID) (*pb.Podcas
 	return podcast, nil
 }
 
-func (p *PodcastRepo) GetUserPodcasts(ctx context.Context, in *pb.ID) (*pb.UserPodcasts, error) {
+func (p *PodcastRepo) GetUserPodcasts(in *pb.ID) (*pb.UserPodcasts, error) {
 	query := `select id, user_id, title, description, created_at, updated_at
 	from podcasts where user_id = $1 and deleted_at = null`
 

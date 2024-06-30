@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	pb "podcast_service/genproto/episodes"
@@ -51,7 +50,7 @@ func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, e
 	return id, nil
 }
 
-func (p *PodcastRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, error) {
+func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, error) {
 	query := `select id, podcast_id, user_id, title, file_audio,
 	description, duration, created_at, updated_at from episodes 
 	where podcast_id = $1`
@@ -79,36 +78,36 @@ func (p *PodcastRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, er
 	return &episodes, nil
 }
 
-func (e *EpisodeRepo) UpdateEpisode(ctx context.Context, in *pb.IDs) (*pb.Void, error) {
+func (e *EpisodeRepo) UpdateEpisode(podcastIds *pb.IDs) (*pb.Void, error) {
 	query := `update episodes set `
 	params := []interface{}{}
 
-	if in.Episode.UserId != "" {
+	if podcastIds.Episode.UserId != "" {
 		query += fmt.Sprintf("user_id = $%d, ", len(params)+1)
-		params = append(params, in.Episode.UserId)
+		params = append(params, podcastIds.Episode.UserId)
 	}
-	if in.Episode.Title != "" {
+	if podcastIds.Episode.Title != "" {
 		query += fmt.Sprintf("title = $%d, ", len(params)+1)
-		params = append(params, in.Episode.Title)
+		params = append(params, podcastIds.Episode.Title)
 	}
-	if in.Episode.FileAudio != nil {
+	if podcastIds.Episode.FileAudio != nil {
 		query += fmt.Sprintf("file_audio = $%d, ", len(params)+1)
-		params = append(params, in.Episode.FileAudio)
+		params = append(params, podcastIds.Episode.FileAudio)
 	}
-	if in.Episode.Description != "" {
+	if podcastIds.Episode.Description != "" {
 		query += fmt.Sprintf("description = $%d, ", len(params)+1)
-		params = append(params, in.Episode.Description)
+		params = append(params, podcastIds.Episode.Description)
 	}
-	if in.Episode.Duration > 0 {
+	if podcastIds.Episode.Duration > 0 {
 		query += fmt.Sprintf("duration = $%d, ", len(params)+1)
-		params = append(params, in.Episode.Duration)
+		params = append(params, podcastIds.Episode.Duration)
 	}
 	query += fmt.Sprintf("updated_at = $%d ", len(params)+1)
 	params = append(params, time.Now())
 	query += fmt.Sprintf("where podcast_id = $%d ", len(params)+1)
-	params = append(params, in.PodcastId)
+	params = append(params, podcastIds.PodcastId)
 	query += fmt.Sprintf(" and id = $%d and deleted_at = null", len(params)+1)
-	params = append(params, in.EpisodeId)
+	params = append(params, podcastIds.EpisodeId)
 
 	tr, err := e.Db.Begin()
 
