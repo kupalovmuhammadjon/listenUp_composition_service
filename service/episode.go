@@ -7,11 +7,16 @@ import (
 )
 
 type EpisodeService struct {
-	Repo *postgres.EpisodeRepo
+	pb.UnimplementedEpisodesServiceServer
+	Episode *postgres.EpisodeRepo
+}
+
+func NewEpisodeService(Episode *postgres.EpisodeRepo) *EpisodeService {
+	return &EpisodeService{Episode: Episode}
 }
 
 func (e *EpisodeService) UpdateEpisode(ctx context.Context, req *pb.IDs) (*pb.Void, error) {
-	resp, err := e.Repo.UpdateEpisode(ctx, req)
+	resp, err := e.Episode.UpdateEpisode(ctx, req)
 	if err != nil {
 		return nil, err
 	}

@@ -7,11 +7,16 @@ import (
 )
 
 type PodcastService struct {
-	Repo *postgres.PodcastRepo
+	pb.UnimplementedPodcastsServer
+	Podcast *postgres.PodcastRepo
+}
+
+func NewPodcastService(Podcast *postgres.PodcastRepo) *PodcastService {
+	return &PodcastService{Podcast: Podcast}
 }
 
 func (p *PodcastService) GetPodcastById(ctx context.Context, req *pb.ID) (*pb.Podcast, error) {
-	resp, err := p.Repo.GetPodcastById(ctx, req)
+	resp, err := p.Podcast.GetPodcastById(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +25,7 @@ func (p *PodcastService) GetPodcastById(ctx context.Context, req *pb.ID) (*pb.Po
 }
 
 func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.UserPodcasts, error) {
-	resp, err := p.Repo.GetUserPodcasts(ctx, req)
+	resp, err := p.Podcast.GetUserPodcasts(ctx, req)
 	if err != nil {
 		return nil, err
 	}
