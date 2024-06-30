@@ -24,8 +24,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	p := service.NewPodcastService(postgres.NewPodcastRepo(db))
-	e := service.NewEpisodeService(postgres.NewEpisodeRepo(db))
+	p := service.NewPodcastService(db)
+	e := service.NewEpisodeService(db)
 
 	grpcServer := grpc.NewServer()
 	pbP.RegisterPodcastsServer(grpcServer, p)

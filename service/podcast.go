@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	pb "podcast_service/genproto/podcasts"
 	"podcast_service/storage/postgres"
 )
@@ -11,8 +12,9 @@ type PodcastService struct {
 	Podcast *postgres.PodcastRepo
 }
 
-func NewPodcastService(Podcast *postgres.PodcastRepo) *PodcastService {
-	return &PodcastService{Podcast: Podcast}
+func NewPodcastService(db *sql.DB) *PodcastService {
+	podcast := postgres.NewPodcastRepo(db)
+	return &PodcastService{Podcast: podcast}
 }
 
 func (p *PodcastService) CreatePodcast(ctx context.Context, req *pb.PodcastCreate) (*pb.ID, error) {
@@ -40,6 +42,12 @@ func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.U
 	}
 
 	return resp, nil
+}
+
+func (p *PodcastService) UpdatePodcast(ctx context.Context, podcast *pb.PodcastUpdate) (*pb.Void, error) {
+	err := p.Podcast.UpdatePodcast(podcast)
+
+	return &pb.Void{}, err
 }
 
 func (p *PodcastService) DeletePodcast(ctx context.Context, req *pb.ID) (*pb.Void, error) {
