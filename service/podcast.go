@@ -17,43 +17,17 @@ func NewPodcastService(db *sql.DB) *PodcastService {
 	return &PodcastService{Podcast: podcast}
 }
 
-<<<<<<< HEAD
-func (p *PodcastService) CreatePodcast(ctx context.Context, req *pb.PodcastCreate) (*string, error) {
-=======
 func (p *PodcastService) CreatePodcast(ctx context.Context, req *pb.PodcastCreate) (*pb.ID, error) {
->>>>>>> main
 	resp, err := p.Podcast.CreatePodcast(req)
 	if err != nil {
 		return nil, err
 	}
 
-<<<<<<< HEAD
-	return resp, nil
-}
-
-func (p *PodcastService) DeletePodcast(ctx context.Context, req *pb.ID) (*pb.Void, error) {
-	resp, err := p.Podcast.DeletePodcast(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-=======
 	return &pb.ID{Id: *resp}, nil
->>>>>>> main
 }
 
 func (p *PodcastService) GetPodcastById(ctx context.Context, req *pb.ID) (*pb.Podcast, error) {
 	resp, err := p.Podcast.GetPodcastById(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.UserPodcasts, error) {
-	resp, err := p.Podcast.GetUserPodcasts(req)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +43,15 @@ func (p *PodcastService) UpdatePodcast(ctx context.Context, podcast *pb.PodcastU
 
 func (p *PodcastService) DeletePodcast(ctx context.Context, req *pb.ID) (*pb.Void, error) {
 	resp, err := p.Podcast.DeletePodcast(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.UserPodcasts, error) {
+	resp, err := p.Podcast.GetUserPodcasts(req)
 	if err != nil {
 		return nil, err
 	}
