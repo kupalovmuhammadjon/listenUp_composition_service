@@ -125,7 +125,7 @@ func (e *EpisodeRepo) UpdateEpisode(podcastIds *pb.IDs) (*pb.Void, error) {
 		}
 	}()
 
-	_, err = tr.Exec(query, params...) // changed from e.Db.Exec
+	_, err = tr.Exec(query, params...)
 	if err != nil {
 		return nil, err
 	}
