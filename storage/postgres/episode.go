@@ -20,21 +20,13 @@ func NewEpisodeRepo(db *sql.DB) *EpisodeRepo {
 
 func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, error) {
 	query := `
-	insert into
-		episodes(
-		episode_id,
-		podcast_id,
-   	 	user_id,
-      	title,
-      	file_audio,
-      	description,
-      	duration,
-		genre,
-		tags,
-		updated_at
-      	)
-	values ($1, $2, $3, $4, $5, $6. $7, $8, $9, $10)	
-`
+	insert into episodes(
+		episode_id, podcast_id, user_id, title, file_audio, description,
+      	duration, genre, tags,updated_at
+    ) values (
+	 	$1, $2, $3, $4, $5, $6. $7, $8, $9, $10
+	)`
+
 	id := uuid.NewString()
 	tx, err := e.Db.Begin()
 	if err != nil {

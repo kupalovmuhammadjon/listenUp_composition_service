@@ -19,7 +19,7 @@ CREATE TABLE episodes (
     description TEXT,
     duration float,
     genre VARCHAR,
-    tags []VARCHAR,
+    tags VARCHAR[],
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
     updated_at TIMESTAMP,
     deleted_at TIMESTAMP
