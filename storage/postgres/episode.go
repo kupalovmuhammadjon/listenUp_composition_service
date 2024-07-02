@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type EpisodeRepo struct {
@@ -28,17 +29,20 @@ func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, e
       	file_audio,
       	description,
       	duration,
+		genre,
+		tags,
 		updated_at
       	)
-	values ($1, $2, $3, $4, $5, $6. $7, $8)	
+	values ($1, $2, $3, $4, $5, $6. $7, $8, $9, $10)	
 `
 	id := uuid.NewString()
 	tx, err := e.Db.Begin()
 	if err != nil {
 		return "", err
 	}
-	_, err = tx.Exec(query, id, episode.PodcastId, episode.UserId, episode.Title, episode.FileAudio,
-		episode.Description, episode.Duration, time.Now())
+	_, err = tx.Exec(query, id, episode.PodcastId, episode.UserId, episode.Title,
+		episode.FileAudio, episode.Description, episode.Duration, episode.Genre,
+		pq.Array(episode.Tags), time.Now())
 	if err != nil {
 		tx.Rollback()
 		return "", err
@@ -52,7 +56,7 @@ func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, e
 
 func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, error) {
 	query := `select id, podcast_id, user_id, title, file_audio,
-	description, duration, created_at, updated_at from episodes 
+	description, duration, genre, tags, created_at, updated_at from episodes 
 	where podcast_id = $1`
 
 	rows, err := p.Db.Query(query, podcastId)
@@ -65,7 +69,8 @@ func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, er
 		episode := pb.Episode{}
 		err := rows.Scan(&episode.Id, &episode.PodcastId, &episode.UserId,
 			&episode.Title, &episode.FileAudio, &episode.Description,
-			&episode.Duration, &episode.CreatedAt, &episode.UpdatedAt)
+			&episode.Duration, &episode.Genre, pq.Array(&episode.Tags),
+			&episode.CreatedAt, &episode.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -102,6 +107,15 @@ func (e *EpisodeRepo) UpdateEpisode(podcastIds *pb.IDs) (*pb.Void, error) {
 		query += fmt.Sprintf("duration = $%d, ", len(params)+1)
 		params = append(params, podcastIds.Episode.Duration)
 	}
+	if podcastIds.Episode.Genre != "" {
+		query += fmt.Sprintf("genre = $%d, ", len(params)+1)
+		params = append(params, podcastIds.Episode.Genre)
+	}
+	if len(podcastIds.Episode.Tags) > 0 {
+		query += fmt.Sprintf("tags = $%d, ", len(params)+1)
+		params = append(params, podcastIds.Episode.Tags)
+	}
+
 	query += fmt.Sprintf("updated_at = $%d ", len(params)+1)
 	params = append(params, time.Now())
 	query += fmt.Sprintf("where podcast_id = $%d ", len(params)+1)
