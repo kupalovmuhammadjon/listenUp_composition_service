@@ -70,11 +70,7 @@ func (p *PodcastRepo) GetPodcastById(in *pb.ID) (*pb.Podcast, error) {
 		}
 		return nil, err
 	}
-	if tem.Valid {
-		podcast.UpdatedAt = tem.String
-	} else {
-		podcast.UpdatedAt = ""
-	}
+	podcast.UpdatedAt = tem.String
 
 	return &podcast, nil
 }
@@ -103,11 +99,7 @@ func (p *PodcastRepo) GetUserPodcasts(in *pb.ID) (*pb.UserPodcasts, error) {
 		if err != nil {
 			return nil, err
 		}
-		if tem.Valid {
-			podcast.UpdatedAt = tem.String
-		} else {
-			podcast.UpdatedAt = ""
-		}
+		podcast.UpdatedAt = tem.String
 		podcasts = append(podcasts, &podcast)
 	}
 

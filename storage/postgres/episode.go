@@ -21,10 +21,10 @@ func NewEpisodeRepo(db *sql.DB) *EpisodeRepo {
 func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, error) {
 	query := `
 	insert into episodes(
-		episode_id, podcast_id, user_id, title, file_audio, description,
+		id, podcast_id, user_id, title, file_audio, description,
       	duration, genre, tags,updated_at
     ) values (
-	 	$1, $2, $3, $4, $5, $6. $7, $8, $9, $10
+	 	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 	)`
 
 	id := uuid.NewString()
@@ -51,7 +51,7 @@ func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, er
 	description, duration, genre, tags, created_at, updated_at from episodes 
 	where podcast_id = $1`
 
-	rows, err := p.Db.Query(query, podcastId)
+	rows, err := p.Db.Query(query, podcastId.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -76,71 +76,41 @@ func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, er
 }
 
 func (e *EpisodeRepo) UpdateEpisode(podcastIds *pb.IDs) (*pb.Void, error) {
-	query := `update episodes set `
-	params := []interface{}{}
-
-	if podcastIds.Episode.UserId != "" {
-		query += fmt.Sprintf("user_id = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.UserId)
-	}
-	if podcastIds.Episode.Title != "" {
-		query += fmt.Sprintf("title = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Title)
-	}
-	if podcastIds.Episode.FileAudio != nil {
-		query += fmt.Sprintf("file_audio = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.FileAudio)
-	}
-	if podcastIds.Episode.Description != "" {
-		query += fmt.Sprintf("description = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Description)
-	}
-	if podcastIds.Episode.Duration > 0 {
-		query += fmt.Sprintf("duration = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Duration)
-	}
-	if podcastIds.Episode.Genre != "" {
-		query += fmt.Sprintf("genre = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Genre)
-	}
-	if len(podcastIds.Episode.Tags) > 0 {
-		query += fmt.Sprintf("tags = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Tags)
-	}
-
-	query += fmt.Sprintf("updated_at = $%d ", len(params)+1)
-	params = append(params, time.Now())
-	query += fmt.Sprintf("where podcast_id = $%d ", len(params)+1)
-	params = append(params, podcastIds.PodcastId)
-	query += fmt.Sprintf(" and id = $%d and deleted_at = null", len(params)+1)
-	params = append(params, podcastIds.EpisodeId)
+	query := `
+		update
+			episodes 
+		set 
+			user_id = $1, title = $2, file_audio = $3,
+			description = $4, duration = $5, genre = $6,
+			tags = $7, updated_at = $8
+		where
+			podcast_id = $9 and 
+			id = $10 and 
+			deleted_at IS NULL`
 
 	tr, err := e.Db.Begin()
-
-	defer func() {
-		if err != nil {
-			tr.Rollback()
-		} else {
-			tr.Commit()
-		}
-	}()
-
-	_, err = tr.Exec(query, params...)
 	if err != nil {
 		return nil, err
 	}
+	defer tr.Commit()
 
-	return &pb.Void{}, nil
+	_, err = tr.Exec(query, podcastIds.Episode.UserId,
+		podcastIds.Episode.Title, podcastIds.Episode.FileAudio,
+		podcastIds.Episode.Description, podcastIds.Episode.Duration,
+		podcastIds.Episode.Genre, pq.Array(podcastIds.Episode.Tags),
+		time.Now(), podcastIds.PodcastId, podcastIds.EpisodeId)
+
+	return &pb.Void{}, err
 }
 
 func (e *EpisodeRepo) DeletePodcastEpisode(ids *pb.IDsForDelete) error {
 	query := `
-	update 
+	update
 	    episodes 
 	set 
 	    deleted_at = now() 
 	where 
-	    episode_id = $1,
+	    id = $1 and
 		podcast_id = $2
 `
 	tx, err := e.Db.Begin()

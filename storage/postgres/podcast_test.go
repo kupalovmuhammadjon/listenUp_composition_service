@@ -43,6 +43,7 @@ func TestGetPodcastById(t *testing.T) {
 		Title:       "BBS learning english",
 		Description: "learning english",
 		CreatedAt:   "2024-07-03T19:27:51.479733+05:00",
+		UpdatedAt:   "2024-07-04T10:19:01.384619Z",
 	}
 	got, err := NewPodcastRepo(db).GetPodcastById(&id)
 	if err != nil || err == sql.ErrNoRows {

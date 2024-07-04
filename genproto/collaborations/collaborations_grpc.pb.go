@@ -26,7 +26,7 @@ type CollaborationsClient interface {
 	RespondInvitation(ctx context.Context, in *CreateCollaboration, opts ...grpc.CallOption) (*ID, error)
 	GetCollaboratorsByPodcastId(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Collaborators, error)
 	UpdateCollaboratorByPodcastId(ctx context.Context, in *UpdateCollaborator, opts ...grpc.CallOption) (*Void, error)
-	DeleteCollaboratorByPodcastId(ctx context.Context, in *IdsCol, opts ...grpc.CallOption) (*Void, error)
+	DeleteCollaboratorByPodcastId(ctx context.Context, in *Ids, opts ...grpc.CallOption) (*Void, error)
 }
 
 type collaborationsClient struct {
@@ -73,7 +73,7 @@ func (c *collaborationsClient) UpdateCollaboratorByPodcastId(ctx context.Context
 	return out, nil
 }
 
-func (c *collaborationsClient) DeleteCollaboratorByPodcastId(ctx context.Context, in *IdsCol, opts ...grpc.CallOption) (*Void, error) {
+func (c *collaborationsClient) DeleteCollaboratorByPodcastId(ctx context.Context, in *Ids, opts ...grpc.CallOption) (*Void, error) {
 	out := new(Void)
 	err := c.cc.Invoke(ctx, "/collaborations.Collaborations/DeleteCollaboratorByPodcastId", in, out, opts...)
 	if err != nil {
@@ -90,7 +90,7 @@ type CollaborationsServer interface {
 	RespondInvitation(context.Context, *CreateCollaboration) (*ID, error)
 	GetCollaboratorsByPodcastId(context.Context, *ID) (*Collaborators, error)
 	UpdateCollaboratorByPodcastId(context.Context, *UpdateCollaborator) (*Void, error)
-	DeleteCollaboratorByPodcastId(context.Context, *IdsCol) (*Void, error)
+	DeleteCollaboratorByPodcastId(context.Context, *Ids) (*Void, error)
 	mustEmbedUnimplementedCollaborationsServer()
 }
 
@@ -110,7 +110,7 @@ func (UnimplementedCollaborationsServer) GetCollaboratorsByPodcastId(context.Con
 func (UnimplementedCollaborationsServer) UpdateCollaboratorByPodcastId(context.Context, *UpdateCollaborator) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateCollaboratorByPodcastId not implemented")
 }
-func (UnimplementedCollaborationsServer) DeleteCollaboratorByPodcastId(context.Context, *IdsCol) (*Void, error) {
+func (UnimplementedCollaborationsServer) DeleteCollaboratorByPodcastId(context.Context, *Ids) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCollaboratorByPodcastId not implemented")
 }
 func (UnimplementedCollaborationsServer) mustEmbedUnimplementedCollaborationsServer() {}
@@ -199,7 +199,7 @@ func _Collaborations_UpdateCollaboratorByPodcastId_Handler(srv interface{}, ctx 
 }
 
 func _Collaborations_DeleteCollaboratorByPodcastId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IdsCol)
+	in := new(Ids)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func _Collaborations_DeleteCollaboratorByPodcastId_Handler(srv interface{}, ctx 
 		FullMethod: "/collaborations.Collaborations/DeleteCollaboratorByPodcastId",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CollaborationsServer).DeleteCollaboratorByPodcastId(ctx, req.(*IdsCol))
+		return srv.(CollaborationsServer).DeleteCollaboratorByPodcastId(ctx, req.(*Ids))
 	}
 	return interceptor(ctx, in, info, handler)
 }
