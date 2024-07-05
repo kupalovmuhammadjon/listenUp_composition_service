@@ -9,6 +9,19 @@ import (
 	"github.com/google/uuid"
 )
 
+func TestValidatePodcastId(t *testing.T) {
+	id := pb.ID{Id: "8e89c32d-1425-4f6f-b86a-ab85c4af870c"}
+
+	db, err := ConnectDB()
+	if err != nil {
+		t.Error(err)
+	}
+	_, err = NewPodcastRepo(db).ValidatePodcastId(&id)
+	if err != nil || err == sql.ErrNoRows {
+		t.Error(err)
+	}
+}
+
 func TestCreatePodcast(t *testing.T) {
 	newPodcast := pb.PodcastCreate{
 		UserId:      "65592165-c1e2-4cac-9c02-7546b34a8d27",

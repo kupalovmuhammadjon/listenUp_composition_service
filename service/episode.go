@@ -10,22 +10,17 @@ import (
 type EpisodeService struct {
 	pb.UnimplementedEpisodesServiceServer
 	Episode *postgres.EpisodeRepo
-	Podcase *postgres.PodcastRepo
 }
 
 func NewEpisodeService(db *sql.DB) *EpisodeService {
 	episodeRepo := postgres.NewEpisodeRepo(db)
-	podcastRepo := postgres.NewPodcastRepo(db)
-	return &EpisodeService{Episode: episodeRepo, Podcase: podcastRepo}
+	return &EpisodeService{Episode: episodeRepo}
 }
 
-func (e *EpisodeService) ValidatePodcastId(ctx context.Context, req *pb.ID) (*pb.Success, error) {
-	resp, err := e.Episode.ValidatePodcastId(req)
-	if err != nil {
-		return nil, err
-	}
+func (e *EpisodeService) CreatePodcastEpisode(ctx context.Context, podcast *pb.EpisodeCreate) (*pb.ID, error) {
+	id, err := e.Episode.CreatePodcastEpisode(podcast)
 
-	return resp, nil
+	return &pb.ID{Id: id}, err
 }
 
 func (e *EpisodeService) GetEpisodesByPodcastId(ctx context.Context, req *pb.Filter) (*pb.Episodes, error) {
@@ -46,20 +41,22 @@ func (e *EpisodeService) UpdateEpisode(ctx context.Context, req *pb.IDs) (*pb.Vo
 	return resp, nil
 }
 
-func (e *EpisodeService) CreatePodcastEpisode(ctx context.Context, podcast *pb.EpisodeCreate) (*pb.ID, error) {
-	id, err := e.Episode.CreatePodcastEpisode(podcast)
-
-	return &pb.ID{Id: id}, err
-}
-
 func (e *EpisodeService) DeleteEpisode(ctx context.Context, ids *pb.IDsForDelete) (*pb.Void, error) {
 	err := e.Episode.DeletePodcastEpisode(ids)
 
 	return &pb.Void{}, err
 }
 
-func (e *EpisodeService) PublishPodcast(ctx context.Context, id *pb.ID) (*pb.Success, error) {
-	success, err := e.Podcase.PublishPodcast(id)
+func (e *EpisodeService) SearchEpisodeByTitle(ctx context.Context, title *pb.Title) (*pb.Episode, error) {
+	resp, err := e.Episode.SearchEpisodeByTitle(title.Title)
+	return resp, err
+}
 
-	return success, err
+func (e *EpisodeService) ValidateEpisodeId(ctx context.Context, req *pb.ID) (*pb.Success, error) {
+	resp, err := e.Episode.ValidateEpisodeId(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

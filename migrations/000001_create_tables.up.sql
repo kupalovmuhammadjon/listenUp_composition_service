@@ -22,5 +22,16 @@ CREATE TABLE episodes (
     tags VARCHAR[],
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
     updated_at TIMESTAMP,
-    deleted_at TIMESTAMP
+    deleted_at TIMESTAMP,
+    search_vector tsvector
 );
+
+CREATE OR REPLACE FUNCTION update_search_vector() RETURNS TRIGGER AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('english', coalesce(NEW.title, '') || ' ');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
+ON episodes FOR EACH ROW EXECUTE FUNCTION update_search_vector();

@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"database/sql"
-	"fmt"
 	pb "podcast_service/genproto/episodes"
 	"time"
 
@@ -18,7 +17,7 @@ func NewEpisodeRepo(db *sql.DB) *EpisodeRepo {
 	return &EpisodeRepo{Db: db}
 }
 
-func (e *EpisodeRepo) ValidatePodcastId(id *pb.ID) (*pb.Success, error) {
+func (e *EpisodeRepo) ValidateEpisodeId(id *pb.ID) (*pb.Success, error) {
 	query := `
 		select
 			case 
@@ -70,8 +69,9 @@ func (p *EpisodeRepo) GetEpisodesByPodcastId(filter *pb.Filter) (*pb.Episodes, e
 		description, duration, genre, tags, created_at, updated_at 
 	from 
 		episodes 
-	where 
-		podcast_id = $1
+	where
+		deleted_at is null
+		and podcast_id = $1
 	limit $2
 	offset $3`
 
@@ -133,8 +133,9 @@ func (e *EpisodeRepo) DeletePodcastEpisode(ids *pb.IDsForDelete) error {
 	    episodes 
 	set 
 	    deleted_at = now() 
-	where 
-	    id = $1 and
+	where
+		deleted_at is null
+	    and id = $1 and
 		podcast_id = $2
 `
 	tx, err := e.Db.Begin()
@@ -153,23 +154,22 @@ func (e *EpisodeRepo) DeletePodcastEpisode(ids *pb.IDsForDelete) error {
 	return nil
 }
 
-func (p *PodcastRepo) PublishPodcast(podcastId *pb.ID) (*pb.Success, error) {
-	tx, err := p.Db.Begin()
-	if err != nil {
-		return &pb.Success{Success: false}, err
-	}
-	defer tx.Commit()
+func (e *EpisodeRepo) SearchEpisodeByTitle(title string) (*pb.Episode, error) {
+	query := `
+	select
+		id, podcast_id, user_id, file_audio, description,
+		duration, genre, tags, created_at, updated_at
+	from
+		episodes
+	where
+		deleted_at = 0
+		and title = $1`
 
-	query := `update podcasts set status = 'published' where status != 
-	'published' and id = $1`
+	ep := pb.Episode{Title: title}
 
-	res, err := tx.Exec(query, podcastId)
-	if err != nil {
-		return &pb.Success{Success: false}, err
-	}
+	row := e.Db.QueryRow(query, title)
+	err := row.Scan(&ep.Id, &ep.PodcastId, &ep.UserId, &ep.FileAudio, &ep.Description,
+		&ep.Duration, &ep.Genre, &ep.Tags, &ep.CreatedAt, &ep.UpdatedAt)
 
-	if err, _ := res.RowsAffected(); err <= 0 {
-		return &pb.Success{Success: false}, fmt.Errorf("no rows affected")
-	}
-	return &pb.Success{Success: true}, nil
+	return &ep, err
 }
