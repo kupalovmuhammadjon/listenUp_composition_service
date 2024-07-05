@@ -10,13 +10,11 @@ import (
 type EpisodeService struct {
 	pb.UnimplementedEpisodesServiceServer
 	Episode *postgres.EpisodeRepo
-	Podcase *postgres.PodcastRepo
 }
 
 func NewEpisodeService(db *sql.DB) *EpisodeService {
 	episodeRepo := postgres.NewEpisodeRepo(db)
-	podcastRepo := postgres.NewPodcastRepo(db)
-	return &EpisodeService{Episode: episodeRepo, Podcase: podcastRepo}
+	return &EpisodeService{Episode: episodeRepo}
 }
 
 func (e *EpisodeService) GetEpisodesByPodcastId(ctx context.Context, req *pb.ID) (*pb.Episodes, error) {
@@ -47,10 +45,4 @@ func (e *EpisodeService) DeleteEpisode(ctx context.Context, ids *pb.IDsForDelete
 	err := e.Episode.DeletePodcastEpisode(ids)
 
 	return &pb.Void{}, err
-}
-
-func (e *EpisodeService) PublishPodcast(ctx context.Context, id *pb.ID) (*pb.Success, error) {
-	success, err := e.Podcase.PublishPodcast(id)
-
-	return success, err
 }
