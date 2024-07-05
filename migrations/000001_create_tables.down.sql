@@ -1,3 +1,3 @@
-drop table episodes;
-drop table podcasts;
-drop type episode_status;
+drop table if exists episodes;
+drop table if exists podcasts;
+drop type if exists episode_status;

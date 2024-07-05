@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"database/sql"
+
 	"github.com/google/uuid"
 )
 
@@ -25,8 +26,12 @@ func (p *PodcastRepo) CreatePodcast(podcast *pb.PodcastCreate) (*string, error) 
 	defer tx.Commit()
 
 	newId := uuid.NewString()
-	query := `insert into podcasts (id, user_id, title, description, 
-	status) values ($1,$2,$3,$4,$5)`
+	query := `
+		insert into podcasts (
+			id, user_id, title, description, status
+		) values (
+		 	$1,$2,$3,$4,$5
+		)`
 
 	res, err := tx.Exec(query, newId, podcast.UserId, podcast.Title,
 		podcast.Description, podcast.Status)
@@ -37,6 +42,68 @@ func (p *PodcastRepo) CreatePodcast(podcast *pb.PodcastCreate) (*string, error) 
 		return nil, fmt.Errorf("cannot created")
 	}
 	return &newId, nil
+}
+
+func (p *PodcastRepo) GetPodcastById(in *pb.ID) (*pb.Podcast, error) {
+	podcast := pb.Podcast{Id: in.Id}
+
+	query := `
+		SELECT 
+			user_id, title, description, created_at, updated_at
+		FROM 
+			podcasts
+		WHERE 
+			id = $1 AND 
+			deleted_at IS NULL`
+
+	tem := sql.NullString{}
+	err := p.Db.QueryRow(query, in.Id).Scan(
+		&podcast.UserId,
+		&podcast.Title,
+		&podcast.Description,
+		&podcast.CreatedAt,
+		&tem,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("podcast with id %s not found", in.Id)
+		}
+		return nil, err
+	}
+	podcast.UpdatedAt = tem.String
+
+	return &podcast, nil
+}
+
+func (p *PodcastRepo) GetUserPodcasts(in *pb.ID) (*pb.UserPodcasts, error) {
+	query := `
+	select 
+		id, user_id, title, description, created_at, updated_at
+	from 
+		podcasts 
+	where 
+		user_id = $1 and 
+		deleted_at is null`
+
+	rows, err := p.Db.Query(query, in.Id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var podcasts []*pb.Podcast
+	for rows.Next() {
+		var podcast pb.Podcast
+		tem := sql.NullString{}
+		err := rows.Scan(&podcast.Id, &podcast.UserId, &podcast.Title, &podcast.Description, &podcast.CreatedAt, &tem)
+		if err != nil {
+			return nil, err
+		}
+		podcast.UpdatedAt = tem.String
+		podcasts = append(podcasts, &podcast)
+	}
+
+	return &pb.UserPodcasts{Podcasts: podcasts}, nil
 }
 
 func (p *PodcastRepo) UpdatePodcast(poadcast *pb.PodcastUpdate) error {
@@ -50,7 +117,8 @@ func (p *PodcastRepo) UpdatePodcast(poadcast *pb.PodcastUpdate) error {
    	 	status = $4,
     	updated_at = $5
 	where
-	    id = $6
+		deleted_at is null
+	    and id = $6
 `
 	tx, err := p.Db.Begin()
 	if err != nil {
@@ -86,9 +154,14 @@ func (p *PodcastRepo) DeletePodcast(podcastId *pb.ID) (*pb.Void, error) {
 	}
 	defer tx.Commit()
 
-	query := `update podcasts set deleted_at = $1 where deleted_at 
-	is null`
-	res, err := tx.Exec(query, podcastId)
+	query := `
+		update 
+			podcasts 
+		set 
+			deleted_at = $1 
+		where
+			id = $2 and deleted_at is null`
+	res, err := tx.Exec(query, time.Now(), podcastId.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -97,39 +170,31 @@ func (p *PodcastRepo) DeletePodcast(podcastId *pb.ID) (*pb.Void, error) {
 	}
 	return &pb.Void{}, nil
 }
-func (p *PodcastRepo) GetPodcastById(in *pb.ID) (*pb.Podcast, error) {
-	podcast := &pb.Podcast{Id: in.Id}
 
-	query := `select user_id, title, description, created_at, updated_at
-	from podcasts where id = $1 and deleted_at = null`
-
-	err := p.Db.QueryRow(query, in.Id).Scan(&podcast.UserId, &podcast.Title, &podcast.Description, &podcast.CreatedAt, &podcast.UpdatedAt)
+func (p *PodcastRepo) PublishPodcast(podcastId *pb.ID) (*pb.Success, error) {
+	tx, err := p.Db.Begin()
 	if err != nil {
-		return nil, err
+		return &pb.Success{Success: false}, err
 	}
+	defer tx.Commit()
 
-	return podcast, nil
-}
+	query := `
+	update
+		podcasts
+	set
+		status = 'published'
+	where
+		status != 'published'
+		and id = $1 and
+		deleted_at is null`
 
-func (p *PodcastRepo) GetUserPodcasts(in *pb.ID) (*pb.UserPodcasts, error) {
-	query := `select id, user_id, title, description, created_at, updated_at
-	from podcasts where user_id = $1 and deleted_at = null`
-
-	rows, err := p.Db.Query(query, in.Id)
+	res, err := tx.Exec(query, podcastId)
 	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var podcasts []*pb.Podcast
-	for rows.Next() {
-		var podcast pb.Podcast
-		err := rows.Scan(&podcast.Id, &podcast.UserId, &podcast.Title, &podcast.Description, &podcast.CreatedAt, &podcast.UpdatedAt)
-		if err != nil {
-			return nil, err
-		}
-		podcasts = append(podcasts, &podcast)
+		return &pb.Success{Success: false}, err
 	}
 
-	return &pb.UserPodcasts{Podcasts: podcasts}, nil
+	if err, _ := res.RowsAffected(); err <= 0 {
+		return &pb.Success{Success: false}, fmt.Errorf("no rows affected")
+	}
+	return &pb.Success{Success: true}, nil
 }
