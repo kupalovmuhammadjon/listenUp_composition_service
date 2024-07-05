@@ -1,9 +1,9 @@
 CREATE TYPE episode_status AS ENUM ('draft', 'in_progress', 'completed', 'published');
 CREATE TABLE podcasts (
-    id uuid PRIMARY KEY default gen_random_uuid() not null ,
+    id uuid PRIMARY KEY default gen_random_uuid() not null,
     user_id uuid not null,
     title VARCHAR(100) NOT NULL,
-    description TEXT,
+    description TEXT not null,
     status episode_status DEFAULT 'draft',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
     updated_at TIMESTAMP,
@@ -11,14 +11,27 @@ CREATE TABLE podcasts (
 );
 
 CREATE TABLE episodes (
-      id uuid PRIMARY KEY default gen_random_uuid() not null,
-      podcast_id uuid not null ,
-      user_id uuid not null ,
-      title VARCHAR(100) NOT NULL,
-      file_audio bytea NOT NULL,
-      description TEXT,
-      duration float,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
-      updated_at TIMESTAMP,
-      deleted_at TIMESTAMP
+    id uuid PRIMARY KEY default gen_random_uuid() not null,
+    podcast_id uuid not null ,
+    user_id uuid not null ,
+    title VARCHAR(100) NOT NULL,
+    file_audio bytea NOT NULL,
+    description TEXT not null,
+    duration int not null,
+    genre VARCHAR not null,
+    tags VARCHAR[],
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP not null,
+    updated_at TIMESTAMP,
+    deleted_at TIMESTAMP,
+    search_vector tsvector
 );
+
+CREATE OR REPLACE FUNCTION update_search_vector() RETURNS TRIGGER AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('english', coalesce(NEW.title, '') || ' ');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
+ON episodes FOR EACH ROW EXECUTE FUNCTION update_search_vector();

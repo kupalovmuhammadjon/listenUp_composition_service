@@ -2,11 +2,11 @@ package postgres
 
 import (
 	"database/sql"
-	"fmt"
 	pb "podcast_service/genproto/episodes"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type EpisodeRepo struct {
@@ -19,26 +19,21 @@ func NewEpisodeRepo(db *sql.DB) *EpisodeRepo {
 
 func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, error) {
 	query := `
-	insert into
-		episodes(
-		episode_id,
-		podcast_id,
-   	 	user_id,
-      	title,
-      	file_audio,
-      	description,
-      	duration,
-		updated_at
-      	)
-	values ($1, $2, $3, $4, $5, $6. $7, $8)	
-`
+	insert into episodes(
+		id, podcast_id, user_id, title, file_audio, description,
+      	duration, genre, tags,updated_at
+    ) values (
+	 	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+	)`
+
 	id := uuid.NewString()
 	tx, err := e.Db.Begin()
 	if err != nil {
 		return "", err
 	}
-	_, err = tx.Exec(query, id, episode.PodcastId, episode.UserId, episode.Title, episode.FileAudio,
-		episode.Description, episode.Duration, time.Now())
+	_, err = tx.Exec(query, id, episode.PodcastId, episode.UserId, episode.Title,
+		episode.FileAudio, episode.Description, episode.Duration, episode.Genre,
+		pq.Array(episode.Tags), time.Now())
 	if err != nil {
 		tx.Rollback()
 		return "", err
@@ -50,12 +45,20 @@ func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, e
 	return id, nil
 }
 
-func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, error) {
-	query := `select id, podcast_id, user_id, title, file_audio,
-	description, duration, created_at, updated_at from episodes 
-	where podcast_id = $1`
+func (p *EpisodeRepo) GetEpisodesByPodcastId(filter *pb.Filter) (*pb.Episodes, error) {
+	query := `
+	select 
+		id, podcast_id, user_id, title, file_audio,
+		description, duration, genre, tags, created_at, updated_at 
+	from 
+		episodes 
+	where
+		deleted_at is null
+		and podcast_id = $1
+	limit $2
+	offset $3`
 
-	rows, err := p.Db.Query(query, podcastId)
+	rows, err := p.Db.Query(query, filter.Id, filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +68,8 @@ func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, er
 		episode := pb.Episode{}
 		err := rows.Scan(&episode.Id, &episode.PodcastId, &episode.UserId,
 			&episode.Title, &episode.FileAudio, &episode.Description,
-			&episode.Duration, &episode.CreatedAt, &episode.UpdatedAt)
+			&episode.Duration, &episode.Genre, pq.Array(&episode.Tags),
+			&episode.CreatedAt, &episode.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -79,62 +83,42 @@ func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, er
 }
 
 func (e *EpisodeRepo) UpdateEpisode(podcastIds *pb.IDs) (*pb.Void, error) {
-	query := `update episodes set `
-	params := []interface{}{}
-
-	if podcastIds.Episode.UserId != "" {
-		query += fmt.Sprintf("user_id = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.UserId)
-	}
-	if podcastIds.Episode.Title != "" {
-		query += fmt.Sprintf("title = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Title)
-	}
-	if podcastIds.Episode.FileAudio != nil {
-		query += fmt.Sprintf("file_audio = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.FileAudio)
-	}
-	if podcastIds.Episode.Description != "" {
-		query += fmt.Sprintf("description = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Description)
-	}
-	if podcastIds.Episode.Duration > 0 {
-		query += fmt.Sprintf("duration = $%d, ", len(params)+1)
-		params = append(params, podcastIds.Episode.Duration)
-	}
-	query += fmt.Sprintf("updated_at = $%d ", len(params)+1)
-	params = append(params, time.Now())
-	query += fmt.Sprintf("where podcast_id = $%d ", len(params)+1)
-	params = append(params, podcastIds.PodcastId)
-	query += fmt.Sprintf(" and id = $%d and deleted_at = null", len(params)+1)
-	params = append(params, podcastIds.EpisodeId)
+	query := `
+		update
+			episodes 
+		set 
+			user_id = $1, title = $2, file_audio = $3,
+			description = $4, duration = $5, genre = $6,
+			tags = $7, updated_at = $8
+		where
+			podcast_id = $9 and 
+			id = $10 and 
+			deleted_at IS NULL`
 
 	tr, err := e.Db.Begin()
-
-	defer func() {
-		if err != nil {
-			tr.Rollback()
-		} else {
-			tr.Commit()
-		}
-	}()
-
-	_, err = e.Db.Exec(query, params...)
 	if err != nil {
 		return nil, err
 	}
+	defer tr.Commit()
 
-	return &pb.Void{}, nil
+	_, err = tr.Exec(query, podcastIds.Episode.UserId,
+		podcastIds.Episode.Title, podcastIds.Episode.FileAudio,
+		podcastIds.Episode.Description, podcastIds.Episode.Duration,
+		podcastIds.Episode.Genre, pq.Array(podcastIds.Episode.Tags),
+		time.Now(), podcastIds.PodcastId, podcastIds.EpisodeId)
+
+	return &pb.Void{}, err
 }
 
 func (e *EpisodeRepo) DeletePodcastEpisode(ids *pb.IDsForDelete) error {
 	query := `
-	update 
+	update
 	    episodes 
 	set 
 	    deleted_at = now() 
-	where 
-	    episode_id = $1,
+	where
+		deleted_at is null
+	    and id = $1 and
 		podcast_id = $2
 `
 	tx, err := e.Db.Begin()
@@ -153,23 +137,41 @@ func (e *EpisodeRepo) DeletePodcastEpisode(ids *pb.IDsForDelete) error {
 	return nil
 }
 
-func (p *PodcastRepo) PublishPodcast(podcastId *pb.ID) (*pb.Success, error) {
-	tx, err := p.Db.Begin()
-	if err != nil {
-		return &pb.Success{Success: false}, err
-	}
-	defer tx.Commit()
+func (e *EpisodeRepo) SearchEpisodeByTitle(title string) (*pb.Episode, error) {
+	query := `
+	select
+		id, podcast_id, user_id, file_audio, description,
+		duration, genre, tags, created_at, updated_at
+	from
+		episodes
+	where
+		deleted_at is null
+		and title = $1`
 
-	query := `update podcasts set status = 'published' where status != 
-	'published' and id = $1`
+	ep := pb.Episode{Title: title}
 
-	res, err := tx.Exec(query, podcastId)
-	if err != nil {
-		return &pb.Success{Success: false}, err
-	}
+	row := e.Db.QueryRow(query, title)
+	err := row.Scan(&ep.Id, &ep.PodcastId, &ep.UserId, &ep.FileAudio, &ep.Description,
+		&ep.Duration, &ep.Genre, &ep.Tags, &ep.CreatedAt, &ep.UpdatedAt)
 
-	if err, _ := res.RowsAffected(); err <= 0 {
-		return &pb.Success{Success: false}, fmt.Errorf("no rows affected")
-	}
-	return &pb.Success{Success: true}, nil
+	return &ep, err
+}
+
+func (e *EpisodeRepo) ValidateEpisodeId(id string) (*pb.Success, error) {
+	query := `
+		select
+			case 
+				when id = $1 then true
+			else
+				false
+			end
+		from
+			episodes
+		where
+		    deleted_at is null
+	`
+	res := pb.Success{}
+	err := e.Db.QueryRow(query, id).Scan(&res.Success)
+
+	return &res, err
 }
