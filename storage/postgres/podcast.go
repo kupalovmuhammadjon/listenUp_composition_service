@@ -28,6 +28,8 @@ func (p *PodcastRepo) ValidatePodcastId(id string) (*pb.Success, error) {
 			end
 		from
 			podcasts
+		where
+		    deleted_at is null
 	`
 	res := pb.Success{}
 	err := p.Db.QueryRow(query, id).Scan(&res.Success)
