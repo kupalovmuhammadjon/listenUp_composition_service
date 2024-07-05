@@ -46,12 +46,19 @@ func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, e
 	return id, nil
 }
 
-func (p *EpisodeRepo) GetEpisodesByPodcastId(podcastId *pb.ID) (*pb.Episodes, error) {
-	query := `select id, podcast_id, user_id, title, file_audio,
-	description, duration, genre, tags, created_at, updated_at from episodes 
-	where podcast_id = $1`
+func (p *EpisodeRepo) GetEpisodesByPodcastId(filter *pb.Filter) (*pb.Episodes, error) {
+	query := `
+	select 
+		id, podcast_id, user_id, title, file_audio,
+		description, duration, genre, tags, created_at, updated_at 
+	from 
+		episodes 
+	where 
+		podcast_id = $1
+	limit $2
+	offset $3`
 
-	rows, err := p.Db.Query(query, podcastId.Id)
+	rows, err := p.Db.Query(query, filter.Id, filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EpisodesServiceClient interface {
 	CreatePodcastEpisode(ctx context.Context, in *EpisodeCreate, opts ...grpc.CallOption) (*ID, error)
-	GetEpisodesByPodcastId(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Episodes, error)
+	GetEpisodesByPodcastId(ctx context.Context, in *Filter, opts ...grpc.CallOption) (*Episodes, error)
 	UpdateEpisode(ctx context.Context, in *IDs, opts ...grpc.CallOption) (*Void, error)
 	DeleteEpisode(ctx context.Context, in *IDsForDelete, opts ...grpc.CallOption) (*Void, error)
 	PublishPodcast(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Success, error)
@@ -46,7 +46,7 @@ func (c *episodesServiceClient) CreatePodcastEpisode(ctx context.Context, in *Ep
 	return out, nil
 }
 
-func (c *episodesServiceClient) GetEpisodesByPodcastId(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Episodes, error) {
+func (c *episodesServiceClient) GetEpisodesByPodcastId(ctx context.Context, in *Filter, opts ...grpc.CallOption) (*Episodes, error) {
 	out := new(Episodes)
 	err := c.cc.Invoke(ctx, "/episodes.EpisodesService/GetEpisodesByPodcastId", in, out, opts...)
 	if err != nil {
@@ -87,7 +87,7 @@ func (c *episodesServiceClient) PublishPodcast(ctx context.Context, in *ID, opts
 // for forward compatibility
 type EpisodesServiceServer interface {
 	CreatePodcastEpisode(context.Context, *EpisodeCreate) (*ID, error)
-	GetEpisodesByPodcastId(context.Context, *ID) (*Episodes, error)
+	GetEpisodesByPodcastId(context.Context, *Filter) (*Episodes, error)
 	UpdateEpisode(context.Context, *IDs) (*Void, error)
 	DeleteEpisode(context.Context, *IDsForDelete) (*Void, error)
 	PublishPodcast(context.Context, *ID) (*Success, error)
@@ -101,7 +101,7 @@ type UnimplementedEpisodesServiceServer struct {
 func (UnimplementedEpisodesServiceServer) CreatePodcastEpisode(context.Context, *EpisodeCreate) (*ID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePodcastEpisode not implemented")
 }
-func (UnimplementedEpisodesServiceServer) GetEpisodesByPodcastId(context.Context, *ID) (*Episodes, error) {
+func (UnimplementedEpisodesServiceServer) GetEpisodesByPodcastId(context.Context, *Filter) (*Episodes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEpisodesByPodcastId not implemented")
 }
 func (UnimplementedEpisodesServiceServer) UpdateEpisode(context.Context, *IDs) (*Void, error) {
@@ -145,7 +145,7 @@ func _EpisodesService_CreatePodcastEpisode_Handler(srv interface{}, ctx context.
 }
 
 func _EpisodesService_GetEpisodesByPodcastId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ID)
+	in := new(Filter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func _EpisodesService_GetEpisodesByPodcastId_Handler(srv interface{}, ctx contex
 		FullMethod: "/episodes.EpisodesService/GetEpisodesByPodcastId",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EpisodesServiceServer).GetEpisodesByPodcastId(ctx, req.(*ID))
+		return srv.(EpisodesServiceServer).GetEpisodesByPodcastId(ctx, req.(*Filter))
 	}
 	return interceptor(ctx, in, info, handler)
 }

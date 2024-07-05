@@ -50,7 +50,7 @@ func (p *PodcastService) DeletePodcast(ctx context.Context, req *pb.ID) (*pb.Voi
 	return resp, nil
 }
 
-func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.UserPodcasts, error) {
+func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.Filter) (*pb.UserPodcasts, error) {
 	resp, err := p.Podcast.GetUserPodcasts(req)
 	if err != nil {
 		return nil, err
