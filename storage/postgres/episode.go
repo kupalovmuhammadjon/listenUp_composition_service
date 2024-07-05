@@ -145,7 +145,7 @@ func (e *EpisodeRepo) SearchEpisodeByTitle(title string) (*pb.Episode, error) {
 	from
 		episodes
 	where
-		deleted_at = 0
+		deleted_at is null
 		and title = $1`
 
 	ep := pb.Episode{Title: title}
@@ -167,6 +167,8 @@ func (e *EpisodeRepo) ValidateEpisodeId(id *pb.ID) (*pb.Success, error) {
 			end
 		from
 			episodes
+		where
+			deleted_at is null
 	`
 	res := pb.Success{}
 	err := e.Db.QueryRow(query, id.Id).Scan(&res.Success)
