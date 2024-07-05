@@ -75,7 +75,7 @@ func (p *PodcastRepo) GetPodcastById(in *pb.ID) (*pb.Podcast, error) {
 	return &podcast, nil
 }
 
-func (p *PodcastRepo) GetUserPodcasts(in *pb.ID) (*pb.UserPodcasts, error) {
+func (p *PodcastRepo) GetUserPodcasts(in *pb.Filter) (*pb.UserPodcasts, error) {
 	query := `
 	select 
 		id, user_id, title, description, created_at, updated_at
@@ -83,9 +83,11 @@ func (p *PodcastRepo) GetUserPodcasts(in *pb.ID) (*pb.UserPodcasts, error) {
 		podcasts 
 	where 
 		user_id = $1 and 
-		deleted_at is null`
+		deleted_at is null
+	limit $2
+	offset $3`
 
-	rows, err := p.Db.Query(query, in.Id)
+	rows, err := p.Db.Query(query, in.Id, in.Limit, in.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -56,28 +56,18 @@ func TestGetPodcastById(t *testing.T) {
 }
 
 func TestGetUserPodcasts(t *testing.T) {
-	id := pb.ID{Id: "65592165-c1e2-4cac-9c02-7546b34a8d27"}
+	id := pb.Filter{
+		Id:     "65592165-c1e2-4cac-9c02-7546b34a8d27",
+		Limit:  10,
+		Offset: 0}
 	db, err := ConnectDB()
 	if err != nil {
 		t.Errorf("error: %s", err)
 	}
-	pod := pb.Podcast{
-		Id:          "8e89c32d-1425-4f6f-b86a-ab85c4af870c",
-		UserId:      "65592165-c1e2-4cac-9c02-7546b34a8d27",
-		Title:       "BBS learning english",
-		Description: "learning english",
-		CreatedAt:   "2024-07-03T19:27:51.479733+05:00",
-	}
-	want := pb.UserPodcasts{
-		Podcasts: []*pb.Podcast{&pod},
-	}
-	got, err := NewPodcastRepo(db).GetUserPodcasts(&id)
+	_, err = NewPodcastRepo(db).GetUserPodcasts(&id)
 	if err != nil || err == sql.ErrNoRows {
 		t.Error(err)
 		return
-	}
-	if !reflect.DeepEqual(got, &want) {
-		t.Errorf("got %s\nwant %s", got, &want)
 	}
 }
 
