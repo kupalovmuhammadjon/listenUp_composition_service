@@ -19,6 +19,15 @@ func NewEpisodeService(db *sql.DB) *EpisodeService {
 	return &EpisodeService{Episode: episodeRepo, Podcase: podcastRepo}
 }
 
+func (e *EpisodeService) ValidatePodcastId(ctx context.Context, req *pb.ID) (*pb.Success, error) {
+	resp, err := e.Episode.ValidatePodcastId(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 func (e *EpisodeService) GetEpisodesByPodcastId(ctx context.Context, req *pb.Filter) (*pb.Episodes, error) {
 	resp, err := e.Episode.GetEpisodesByPodcastId(req)
 	if err != nil {

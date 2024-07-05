@@ -27,6 +27,7 @@ type EpisodesServiceClient interface {
 	UpdateEpisode(ctx context.Context, in *IDs, opts ...grpc.CallOption) (*Void, error)
 	DeleteEpisode(ctx context.Context, in *IDsForDelete, opts ...grpc.CallOption) (*Void, error)
 	PublishPodcast(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Success, error)
+	ValidatePodcastId(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Success, error)
 }
 
 type episodesServiceClient struct {
@@ -82,6 +83,15 @@ func (c *episodesServiceClient) PublishPodcast(ctx context.Context, in *ID, opts
 	return out, nil
 }
 
+func (c *episodesServiceClient) ValidatePodcastId(ctx context.Context, in *ID, opts ...grpc.CallOption) (*Success, error) {
+	out := new(Success)
+	err := c.cc.Invoke(ctx, "/episodes.EpisodesService/ValidatePodcastId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EpisodesServiceServer is the server API for EpisodesService service.
 // All implementations must embed UnimplementedEpisodesServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type EpisodesServiceServer interface {
 	UpdateEpisode(context.Context, *IDs) (*Void, error)
 	DeleteEpisode(context.Context, *IDsForDelete) (*Void, error)
 	PublishPodcast(context.Context, *ID) (*Success, error)
+	ValidatePodcastId(context.Context, *ID) (*Success, error)
 	mustEmbedUnimplementedEpisodesServiceServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedEpisodesServiceServer) DeleteEpisode(context.Context, *IDsFor
 }
 func (UnimplementedEpisodesServiceServer) PublishPodcast(context.Context, *ID) (*Success, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishPodcast not implemented")
+}
+func (UnimplementedEpisodesServiceServer) ValidatePodcastId(context.Context, *ID) (*Success, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidatePodcastId not implemented")
 }
 func (UnimplementedEpisodesServiceServer) mustEmbedUnimplementedEpisodesServiceServer() {}
 
@@ -216,6 +230,24 @@ func _EpisodesService_PublishPodcast_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EpisodesService_ValidatePodcastId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EpisodesServiceServer).ValidatePodcastId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/episodes.EpisodesService/ValidatePodcastId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EpisodesServiceServer).ValidatePodcastId(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EpisodesService_ServiceDesc is the grpc.ServiceDesc for EpisodesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +274,10 @@ var EpisodesService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PublishPodcast",
 			Handler:    _EpisodesService_PublishPodcast_Handler,
+		},
+		{
+			MethodName: "ValidatePodcastId",
+			Handler:    _EpisodesService_ValidatePodcastId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

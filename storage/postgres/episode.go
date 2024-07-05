@@ -18,6 +18,23 @@ func NewEpisodeRepo(db *sql.DB) *EpisodeRepo {
 	return &EpisodeRepo{Db: db}
 }
 
+func (e *EpisodeRepo) ValidatePodcastId(id *pb.ID) (*pb.Success, error) {
+	query := `
+		select
+			case 
+				when id = $1 then true
+			else
+				false
+			end
+		from
+			episodes
+	`
+	res := pb.Success{}
+	err := e.Db.QueryRow(query, id.Id).Scan(&res.Success)
+
+	return &res, err
+}
+
 func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, error) {
 	query := `
 	insert into episodes(
