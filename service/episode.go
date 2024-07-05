@@ -10,11 +10,13 @@ import (
 type EpisodeService struct {
 	pb.UnimplementedEpisodesServiceServer
 	Episode *postgres.EpisodeRepo
+	Podcase *postgres.PodcastRepo
 }
 
 func NewEpisodeService(db *sql.DB) *EpisodeService {
 	episodeRepo := postgres.NewEpisodeRepo(db)
-	return &EpisodeService{Episode: episodeRepo}
+	podcastRepo := postgres.NewPodcastRepo(db)
+	return &EpisodeService{Episode: episodeRepo, Podcase: podcastRepo}
 }
 
 func (e *EpisodeService) GetEpisodesByPodcastId(ctx context.Context, req *pb.ID) (*pb.Episodes, error) {

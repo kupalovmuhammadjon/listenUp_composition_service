@@ -58,9 +58,3 @@ func (p *PodcastService) GetUserPodcasts(ctx context.Context, req *pb.ID) (*pb.U
 
 	return resp, nil
 }
-
-func (p *PodcastService) PublishPodcast(ctx context.Context, id *pb.ID) (*pb.Success, error) {
-	success, err := p.Podcast.PublishPodcast(id)
-
-	return success, err
-}
