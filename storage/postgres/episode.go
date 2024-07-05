@@ -145,7 +145,7 @@ func (e *EpisodeRepo) SearchEpisodeByTitle(title string) (*pb.Episode, error) {
 	from
 		episodes
 	where
-		deleted_at = 0
+		deleted_at is null
 		and title = $1`
 
 	ep := pb.Episode{Title: title}
