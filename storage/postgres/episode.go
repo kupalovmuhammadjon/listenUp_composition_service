@@ -173,3 +173,5 @@ func (p *PodcastRepo) PublishPodcast(podcastId *pb.ID) (*pb.Success, error) {
 	}
 	return &pb.Success{Success: true}, nil
 }
+
+// func (p *PodcastRepo) SearchEpisodeByTitle(title *pb.Title) {}
