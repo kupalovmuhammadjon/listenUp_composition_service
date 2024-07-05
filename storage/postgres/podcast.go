@@ -18,7 +18,7 @@ func NewPodcastRepo(db *sql.DB) *PodcastRepo {
 	return &PodcastRepo{Db: db}
 }
 
-func (p *PodcastRepo) ValidatePodcastId(id *pb.ID) (*pb.Success, error) {
+func (p *PodcastRepo) ValidatePodcastId(id string) (*pb.Success, error) {
 	query := `
 		select
 			case 
@@ -30,7 +30,7 @@ func (p *PodcastRepo) ValidatePodcastId(id *pb.ID) (*pb.Success, error) {
 			podcasts
 	`
 	res := pb.Success{}
-	err := p.Db.QueryRow(query, id.Id).Scan(&res.Success)
+	err := p.Db.QueryRow(query, id).Scan(&res.Success)
 
 	return &res, err
 }

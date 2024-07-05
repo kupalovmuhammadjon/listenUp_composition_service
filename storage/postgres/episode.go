@@ -17,23 +17,6 @@ func NewEpisodeRepo(db *sql.DB) *EpisodeRepo {
 	return &EpisodeRepo{Db: db}
 }
 
-func (e *EpisodeRepo) ValidateEpisodeId(id *pb.ID) (*pb.Success, error) {
-	query := `
-		select
-			case 
-				when id = $1 then true
-			else
-				false
-			end
-		from
-			episodes
-	`
-	res := pb.Success{}
-	err := e.Db.QueryRow(query, id.Id).Scan(&res.Success)
-
-	return &res, err
-}
-
 func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, error) {
 	query := `
 	insert into episodes(
@@ -172,4 +155,21 @@ func (e *EpisodeRepo) SearchEpisodeByTitle(title string) (*pb.Episode, error) {
 		&ep.Duration, &ep.Genre, &ep.Tags, &ep.CreatedAt, &ep.UpdatedAt)
 
 	return &ep, err
+}
+
+func (e *EpisodeRepo) ValidateEpisodeId(id *pb.ID) (*pb.Success, error) {
+	query := `
+		select
+			case 
+				when id = $1 then true
+			else
+				false
+			end
+		from
+			episodes
+	`
+	res := pb.Success{}
+	err := e.Db.QueryRow(query, id.Id).Scan(&res.Success)
+
+	return &res, err
 }

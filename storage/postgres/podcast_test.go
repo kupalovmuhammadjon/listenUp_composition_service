@@ -10,13 +10,13 @@ import (
 )
 
 func TestValidatePodcastId(t *testing.T) {
-	id := pb.ID{Id: "8e89c32d-1425-4f6f-b86a-ab85c4af870c"}
+	id := "8e89c32d-1425-4f6f-b86a-ab85c4af870c"
 
 	db, err := ConnectDB()
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = NewPodcastRepo(db).ValidatePodcastId(&id)
+	_, err = NewPodcastRepo(db).ValidatePodcastId(id)
 	if err != nil || err == sql.ErrNoRows {
 		t.Error(err)
 	}
