@@ -99,7 +99,7 @@ func (e *EpisodeService) SearchEpisodeByTitle(ctx context.Context, title *pb.Tit
 }
 
 func (e *EpisodeService) ValidateEpisodeId(ctx context.Context, req *pb.ID) (*pb.Success, error) {
-	resp, err := e.Episode.ValidateEpisodeId(req)
+	resp, err := e.Episode.ValidateEpisodeId(req.Id)
 	if err != nil {
 		return nil, err
 	}

@@ -157,7 +157,7 @@ func (e *EpisodeRepo) SearchEpisodeByTitle(title string) (*pb.Episode, error) {
 	return &ep, err
 }
 
-func (e *EpisodeRepo) ValidateEpisodeId(id *pb.ID) (*pb.Success, error) {
+func (e *EpisodeRepo) ValidateEpisodeId(id string) (*pb.Success, error) {
 	query := `
 		select
 			case 
@@ -167,9 +167,11 @@ func (e *EpisodeRepo) ValidateEpisodeId(id *pb.ID) (*pb.Success, error) {
 			end
 		from
 			episodes
+		where
+		    deleted_at is null
 	`
 	res := pb.Success{}
-	err := e.Db.QueryRow(query, id.Id).Scan(&res.Success)
+	err := e.Db.QueryRow(query, id).Scan(&res.Success)
 
 	return &res, err
 }

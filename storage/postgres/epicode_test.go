@@ -9,13 +9,13 @@ import (
 )
 
 func TestValidateEpisodeId(t *testing.T) {
-	id := pb.ID{Id: "fe28dcac-94a3-4a48-afcf-9e2dfb7109e4"}
+	id := "fe28dcac-94a3-4a48-afcf-9e2dfb7109e4"
 
 	db, err := ConnectDB()
 	if err != nil {
 		t.Error(err)
 	}
-	_, err = NewEpisodeRepo(db).ValidateEpisodeId(&id)
+	_, err = NewEpisodeRepo(db).ValidateEpisodeId(id)
 	if err != nil || err == sql.ErrNoRows {
 		t.Error(err)
 	}
