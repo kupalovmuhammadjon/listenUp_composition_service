@@ -149,10 +149,15 @@ func (e *EpisodeRepo) SearchEpisodeByTitle(title string) (*pb.Episode, error) {
 		and title = $1`
 
 	ep := pb.Episode{Title: title}
-
+	up := sql.NullString{}
 	row := e.Db.QueryRow(query, title)
 	err := row.Scan(&ep.Id, &ep.PodcastId, &ep.UserId, &ep.FileAudio, &ep.Description,
-		&ep.Duration, &ep.Genre, &ep.Tags, &ep.CreatedAt, &ep.UpdatedAt)
+		&ep.Duration, &ep.Genre, pq.Array(&ep.Tags), &ep.CreatedAt, &up)
+
+	ep.UpdatedAt = up.String
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 
 	return &ep, err
 }

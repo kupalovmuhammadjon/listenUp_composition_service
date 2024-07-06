@@ -33,7 +33,6 @@ func (p *PodcastRepo) ValidatePodcastId(id string) (*pb.Success, error) {
 	`
 	res := pb.Success{}
 	err := p.Db.QueryRow(query, id).Scan(&res.Success)
-
 	return &res, err
 }
 
