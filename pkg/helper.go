@@ -15,7 +15,6 @@ func CreateUserManagementClient() (user.UserManagementClient, error) {
 	if err != nil {
 		return nil, errors.New("failed to connect to the address: " + err.Error())
 	}
-	defer conn.Close()
 
 	u := user.NewUserManagementClient(conn)
 	return u, nil
