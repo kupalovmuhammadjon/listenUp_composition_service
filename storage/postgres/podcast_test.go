@@ -27,7 +27,7 @@ func TestCreatePodcast(t *testing.T) {
 		UserId:      "65592165-c1e2-4cac-9c02-7546b34a8d27",
 		Title:       "BBS learning english",
 		Description: "learning english",
-		Status:      "completed",
+		Status:      "published",
 	}
 	db, err := ConnectDB()
 	if err != nil {

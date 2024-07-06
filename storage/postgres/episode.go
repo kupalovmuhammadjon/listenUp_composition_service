@@ -21,7 +21,7 @@ func (e *EpisodeRepo) CreatePodcastEpisode(episode *pb.EpisodeCreate) (string, e
 	query := `
 	insert into episodes(
 		id, podcast_id, user_id, title, file_audio, description,
-      	duration, genre, tags,updated_at
+      	duration, genre, tags, updated_at
     ) values (
 	 	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 	)`
@@ -168,7 +168,7 @@ func (e *EpisodeRepo) ValidateEpisodeId(id string) (*pb.Success, error) {
 		from
 			episodes
 		where
-		    deleted_at is null
+		    id = $1 and deleted_at is null
 	`
 	res := pb.Success{}
 	err := e.Db.QueryRow(query, id).Scan(&res.Success)

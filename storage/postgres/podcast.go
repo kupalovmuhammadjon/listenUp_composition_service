@@ -29,7 +29,7 @@ func (p *PodcastRepo) ValidatePodcastId(id string) (*pb.Success, error) {
 		from
 			podcasts
 		where
-		    deleted_at is null
+		    id = $1 and deleted_at is null
 	`
 	res := pb.Success{}
 	err := p.Db.QueryRow(query, id).Scan(&res.Success)
@@ -209,7 +209,7 @@ func (p *PodcastRepo) PublishPodcast(podcastId *pb.ID) (*pb.Success, error) {
 		and id = $1 and
 		deleted_at is null`
 
-	res, err := tx.Exec(query, podcastId)
+	res, err := tx.Exec(query, podcastId.Id)
 	if err != nil {
 		return &pb.Success{Success: false}, err
 	}

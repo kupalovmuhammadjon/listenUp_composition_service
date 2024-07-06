@@ -9,14 +9,15 @@ import (
 )
 
 type Config struct {
-	HTTP_PORT            int
-	PODCAST_SERVICE_PORT string
-	USER_SERVICE_PORT    string
-	DB_HOST              string
-	DB_PORT              string
-	DB_USER              string
-	DB_PASSWORD          string
-	DB_NAME              string
+	HTTP_PORT                   int
+	PODCAST_SERVICE_PORT        string
+	USER_SERVICE_PORT           string
+	DB_HOST                     string
+	DB_PORT                     string
+	DB_USER                     string
+	DB_PASSWORD                 string
+	DB_NAME                     string
+	COLLABORATIONS_SERVICE_PORT string
 }
 
 func Load() *Config {
@@ -29,6 +30,7 @@ func Load() *Config {
 	config.HTTP_PORT = cast.ToInt(coalesce("HTTP_PORT", 8080))
 	config.PODCAST_SERVICE_PORT = cast.ToString(coalesce("PODCAST_SERVICE_PORT", 50050))
 	config.USER_SERVICE_PORT = cast.ToString(coalesce("USER_SERVICE_PORT", 50050))
+	config.COLLABORATIONS_SERVICE_PORT = cast.ToString(coalesce("COLLABORATIONS_SERVICE_PORT", 50050))
 	config.DB_HOST = cast.ToString(coalesce("DB_HOST", "localhost"))
 	config.DB_PORT = cast.ToString(coalesce("DB_PORT", 5432))
 	config.DB_USER = cast.ToString(coalesce("DB_USER", "postgres"))
